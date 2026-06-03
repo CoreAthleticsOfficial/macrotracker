@@ -714,6 +714,13 @@
                             <div class="desc">Quickly type in food name and macro counts</div>
                         </div>
                     </button>
+                    <button class="action-btn" onclick="openFoodLibraryModal()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <div>
+                            <div class="title">Choose from Library</div>
+                            <div class="desc">Log a saved food item from your library</div>
+                        </div>
+                    </button>
                     <button class="action-btn" onclick="openWeightModal()">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                         <div>
@@ -794,6 +801,7 @@
                                 <th style="width: 65px;">Prot(g)</th>
                                 <th style="width: 65px;">Carb(g)</th>
                                 <th style="width: 65px;">Fat(g)</th>
+                                <th style="width: 45px; text-align: center;">Save</th>
                                 <th style="width: 40px;"></th>
                             </tr>
                         </thead>
@@ -855,6 +863,10 @@
                             <input type="number" id="manual-fat" class="input-number" required>
                         </div>
                     </div>
+                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 0.25rem;">
+                        <input type="checkbox" id="manual-save-library" style="width: auto; cursor: pointer;">
+                        <label class="form-label" for="manual-save-library" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem;">Save to Food Library for future use</label>
+                    </div>
                     <button type="submit" class="btn-submit" style="margin-top: 0.5rem;">Add Food</button>
                 </form>
             </div>
@@ -876,6 +888,35 @@
                     </div>
                     <button type="submit" class="btn-submit" style="margin-top: 0.5rem;">Record Weight</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FOOD LIBRARY -->
+    <div id="food-library-modal" class="modal-overlay">
+        <div class="modal-content" style="max-height: 95vh;">
+            <div class="modal-header">
+                <h3 class="modal-title">📖 Food Library</h3>
+                <button onclick="closeFoodLibraryModal()" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" style="padding-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div class="form-group">
+                    <input type="text" id="lib-search" class="input-text" placeholder="Search saved foods..." oninput="filterFoodLibrary()">
+                </div>
+                
+                <div id="lib-log-selection" class="hidden" style="background: var(--bg-alt); padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-strong);">Log "<span id="lib-selected-name">Food</span>" to:</div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                        <button onclick="confirmLogLibraryFood('breakfast')" class="theme-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; justify-content: center; background: var(--primary); color: white; border: none; font-weight: 600;">Breakfast</button>
+                        <button onclick="confirmLogLibraryFood('lunch')" class="theme-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; justify-content: center; background: var(--primary); color: white; border: none; font-weight: 600;">Lunch</button>
+                        <button onclick="confirmLogLibraryFood('dinner')" class="theme-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; justify-content: center; background: var(--primary); color: white; border: none; font-weight: 600;">Dinner</button>
+                        <button onclick="confirmLogLibraryFood('snacks')" class="theme-btn" style="padding: 0.5rem 0.25rem; font-size: 0.75rem; justify-content: center; background: var(--primary); color: white; border: none; font-weight: 600;">Snacks</button>
+                    </div>
+                </div>
+
+                <div id="lib-foods-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 350px; overflow-y: auto; padding-right: 2px;">
+                    <!-- Saved library items -->
+                </div>
             </div>
         </div>
     </div>
@@ -911,7 +952,8 @@
                 carbs: 200,
                 fat: 65,
                 weight: 175
-            }
+            },
+            foodLibrary: []
         };
 
         // Charts
@@ -1097,6 +1139,7 @@
                 try {
                     const parsed = JSON.parse(cache);
                     macroTrackerStore = parsed.macroTrackerStore || macroTrackerStore;
+                    macroTrackerStore.foodLibrary = macroTrackerStore.foodLibrary || [];
                     localLastUpdated = parsed.lastUpdated || 0;
                 } catch(e) {
                     console.error("Cache parsing error", e);
@@ -1121,6 +1164,7 @@
                     }
 
                     macroTrackerStore = data.macroTrackerStore || macroTrackerStore;
+                    macroTrackerStore.foodLibrary = macroTrackerStore.foodLibrary || [];
                     localLastUpdated = cloudLastUpdated;
                     
                     // Cache local copy
@@ -1366,6 +1410,28 @@
             document.getElementById('manual-log-modal').classList.remove('active');
         }
 
+        function addFoodToLibrary(item) {
+            macroTrackerStore.foodLibrary = macroTrackerStore.foodLibrary || [];
+            
+            // Check for duplicate in library
+            const exists = macroTrackerStore.foodLibrary.some(x => 
+                x.name.toLowerCase() === item.name.toLowerCase() && 
+                x.portion.toLowerCase() === item.portion.toLowerCase()
+            );
+            
+            if (!exists) {
+                macroTrackerStore.foodLibrary.push({
+                    id: 'lib_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    name: item.name,
+                    portion: item.portion,
+                    calories: item.calories,
+                    protein: item.protein,
+                    carbs: item.carbs,
+                    fat: item.fat
+                });
+            }
+        }
+
         function handleManualLog(e) {
             e.preventDefault();
             const meal = document.getElementById('manual-meal-type').value;
@@ -1375,6 +1441,7 @@
             const protein = parseInt(document.getElementById('manual-protein').value) || 0;
             const carbs = parseInt(document.getElementById('manual-carbs').value) || 0;
             const fat = parseInt(document.getElementById('manual-fat').value) || 0;
+            const saveToLib = document.getElementById('manual-save-library').checked;
 
             if (name && portion) {
                 const dayLog = getOrCreateDayLog(currentDateStr);
@@ -1388,6 +1455,17 @@
                     timestamp: Date.now()
                 });
                 
+                if (saveToLib) {
+                    addFoodToLibrary({
+                        name: name,
+                        portion: portion,
+                        calories: calories,
+                        protein: protein,
+                        carbs: carbs,
+                        fat: fat
+                    });
+                }
+
                 saveData();
                 closeManualLogModal();
                 renderDashboard();
@@ -1692,6 +1770,7 @@
                     const parsed = JSON.parse(evt.target.result);
                     if (parsed.dailyLogs && parsed.targets) {
                         macroTrackerStore = parsed;
+                        macroTrackerStore.foodLibrary = macroTrackerStore.foodLibrary || [];
                         saveData();
                         showToast("Data restored successfully!");
                         renderDashboard();
@@ -1744,7 +1823,8 @@
                         carbs: 200,
                         fat: 65,
                         weight: 175
-                    }
+                    },
+                    foodLibrary: []
                 };
                 saveData();
                 showToast("All data cleared!");
@@ -1888,6 +1968,7 @@ Format exactly as follows:
                     <td><input type="number" value="${item.protein || 0}" class="ai-row-prot" style="text-align: right;"></td>
                     <td><input type="number" value="${item.carbs || 0}" class="ai-row-carb" style="text-align: right;"></td>
                     <td><input type="number" value="${item.fat || 0}" class="ai-row-fat" style="text-align: right;"></td>
+                    <td style="text-align: center;"><input type="checkbox" class="ai-row-save-lib" style="width: auto; cursor: pointer;"></td>
                     <td>
                         <button class="row-delete" onclick="this.closest('tr').remove();" title="Remove">&times;</button>
                     </td>
@@ -1906,6 +1987,7 @@ Format exactly as follows:
                 <td><input type="number" value="0" class="ai-row-prot" style="text-align: right;"></td>
                 <td><input type="number" value="0" class="ai-row-carb" style="text-align: right;"></td>
                 <td><input type="number" value="0" class="ai-row-fat" style="text-align: right;"></td>
+                <td style="text-align: center;"><input type="checkbox" class="ai-row-save-lib" style="width: auto; cursor: pointer;"></td>
                 <td>
                     <button class="row-delete" onclick="this.closest('tr').remove();" title="Remove">&times;</button>
                 </td>
@@ -1932,6 +2014,7 @@ Format exactly as follows:
                 const protein = parseInt(tr.querySelector('.ai-row-prot').value) || 0;
                 const carbs = parseInt(tr.querySelector('.ai-row-carb').value) || 0;
                 const fat = parseInt(tr.querySelector('.ai-row-fat').value) || 0;
+                const saveToLib = tr.querySelector('.ai-row-save-lib').checked;
 
                 if (name) {
                     dayLog.meals[targetMeal].push({
@@ -1943,6 +2026,17 @@ Format exactly as follows:
                         fat: fat,
                         timestamp: Date.now()
                     });
+                    
+                    if (saveToLib) {
+                        addFoodToLibrary({
+                            name: name,
+                            portion: portion,
+                            calories: calories,
+                            protein: protein,
+                            carbs: carbs,
+                            fat: fat
+                        });
+                    }
                     count++;
                 }
             });
@@ -1955,6 +2049,115 @@ Format exactly as follows:
                 haptic('success');
             } else {
                 alert("No valid items to save.");
+            }
+        }
+
+        // --- FOOD LIBRARY CONTROLLERS ---
+        let selectedLibraryFoodId = null;
+
+        function openFoodLibraryModal() {
+            closeActionPickerModal();
+            document.getElementById('food-library-modal').classList.add('active');
+            document.getElementById('lib-search').value = '';
+            document.getElementById('lib-log-selection').classList.add('hidden');
+            selectedLibraryFoodId = null;
+            renderFoodLibrary();
+        }
+
+        function closeFoodLibraryModal() {
+            document.getElementById('food-library-modal').classList.remove('active');
+        }
+
+        function renderFoodLibrary() {
+            const list = document.getElementById('lib-foods-list');
+            list.innerHTML = '';
+            const searchVal = document.getElementById('lib-search').value.toLowerCase().trim();
+
+            macroTrackerStore.foodLibrary = macroTrackerStore.foodLibrary || [];
+            
+            const filtered = macroTrackerStore.foodLibrary.filter(item => 
+                item.name.toLowerCase().includes(searchVal)
+            );
+
+            if (filtered.length === 0) {
+                if (macroTrackerStore.foodLibrary.length === 0) {
+                    list.innerHTML = `<div class="meal-empty">Your library is empty. Save foods when adding meals to see them here!</div>`;
+                } else {
+                    list.innerHTML = `<div class="meal-empty">No matching foods found</div>`;
+                }
+                return;
+            }
+
+            filtered.forEach(item => {
+                list.innerHTML += `
+                    <div class="account-card" style="padding: 0.75rem 1rem; cursor: pointer; transition: border-color 0.2s;" onclick="selectLibraryFood('${item.id}', '${item.name.replace(/'/g, "\\'")}')">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1;">
+                            <span style="font-weight: 600; color: var(--text-strong);">${item.name}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">${item.portion} • ${item.calories} kcal</span>
+                            <div style="display: flex; gap: 0.5rem; font-size: 0.7rem; margin-top: 2px;">
+                                <span style="color: var(--protein-color); font-weight: 500;">P: ${item.protein}g</span>
+                                <span style="color: var(--carbs-color); font-weight: 500;">C: ${item.carbs}g</span>
+                                <span style="color: var(--fat-color); font-weight: 500;">F: ${item.fat}g</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;" onclick="event.stopPropagation()">
+                            <button onclick="selectLibraryFood('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="theme-btn" style="font-size: 0.75rem; padding: 0.4rem 0.6rem; background: var(--primary); color: white; border: none; font-weight: 600;">Log</button>
+                            <button onclick="deleteLibraryFood('${item.id}')" class="btn-row-action delete" style="padding: 0.35rem;">${ICONS.trash}</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterFoodLibrary() {
+            renderFoodLibrary();
+        }
+
+        function selectLibraryFood(id, name) {
+            haptic('light');
+            selectedLibraryFoodId = id;
+            document.getElementById('lib-selected-name').innerText = name;
+            document.getElementById('lib-log-selection').classList.remove('hidden');
+        }
+
+        function confirmLogLibraryFood(mealType) {
+            if (!selectedLibraryFoodId) return;
+            haptic('medium');
+
+            const libItem = macroTrackerStore.foodLibrary.find(x => x.id === selectedLibraryFoodId);
+            if (libItem) {
+                const dayLog = getOrCreateDayLog(currentDateStr);
+                dayLog.meals[mealType].push({
+                    name: libItem.name,
+                    portion: libItem.portion,
+                    calories: libItem.calories,
+                    protein: libItem.protein,
+                    carbs: libItem.carbs,
+                    fat: libItem.fat,
+                    timestamp: Date.now()
+                });
+                saveData();
+                closeFoodLibraryModal();
+                renderDashboard();
+                showToast(`Logged "${libItem.name}" to ${mealType}`);
+            }
+        }
+
+        function deleteLibraryFood(id) {
+            haptic('medium');
+            if (confirm("Remove this item from your library?")) {
+                macroTrackerStore.foodLibrary = macroTrackerStore.foodLibrary || [];
+                const idx = macroTrackerStore.foodLibrary.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    macroTrackerStore.foodLibrary.splice(idx, 1);
+                    saveData();
+                    if (selectedLibraryFoodId === id) {
+                        document.getElementById('lib-log-selection').classList.add('hidden');
+                        selectedLibraryFoodId = null;
+                    }
+                    renderFoodLibrary();
+                    showToast("Item removed from library");
+                }
             }
         }
 
