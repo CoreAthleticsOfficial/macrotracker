@@ -358,8 +358,10 @@
         .file-drop-zone p { margin: 0; color: var(--text-muted); font-size: 0.875rem; }
         .file-drop-zone .highlight { color: var(--primary); font-weight: 600; }
         .file-drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2; }
-        .image-preview-box { margin-top: 1rem; border-radius: var(--radius-lg); max-height: 120px; overflow: hidden; display: none; justify-content: center; background: var(--bg-page); border: 1px solid var(--border); }
-        .image-preview-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
+        .image-preview-box { margin-top: 1rem; border-radius: var(--radius-lg); padding: 0.5rem; display: none; gap: 0.5rem; flex-wrap: wrap; background: var(--bg-page); border: 1px solid var(--border); justify-content: flex-start; }
+        .preview-thumbnail { position: relative; width: 70px; height: 70px; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; background: var(--bg-card); }
+        .preview-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-thumbnail .remove-btn { position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.9); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; font-weight: bold; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
         .review-table-container { width: 100%; max-height: 300px; overflow-y: auto; overflow-x: auto; margin-top: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); }
         .review-table { width: 100%; min-width: 500px; border-collapse: collapse; text-align: left; }
@@ -376,9 +378,9 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Custom Toast Notification */
-        .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: #fff; padding: 0.75rem 1.25rem; border-radius: var(--radius-lg); font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-xl); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; pointer-events: none; border: 1px solid #334155; }
+        .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: #fff; padding: 0.75rem 1.25rem; border-radius: var(--radius-lg); font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-xl); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s, visibility 0.3s; z-index: 100; pointer-events: none; border: 1px solid #334155; opacity: 0; visibility: hidden; }
         [data-theme="dark"] .toast { background: #f8fafc; color: #0f172a; border-color: #e2e8f0; }
-        .toast.active { transform: translateX(-50%) translateY(0); }
+        .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
         @media (min-width: 768px) { .toast { bottom: 2rem; } }
     </style>
 </head>
@@ -562,7 +564,31 @@
                             <div class="tot-block"><span class="tot-lbl">F:</span><span class="tot-val fat" id="tot-fat-snacks">0g</span></div>
                         </div>
                     </div>
-                    <div id="meal-list-snacks" class="meal-list"></div>
+                </div>
+            </div>
+
+            <!-- AI COACH CARD -->
+            <div class="section-card" id="ai-coach-section" style="margin-top: 1.25rem; padding: 1.25rem; position: relative; overflow: hidden;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg style="width: 1.35rem; height: 1.35rem; color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <h3 class="section-title" style="margin: 0; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI Coach Insights</h3>
+                    </div>
+                    <button id="btn-refresh-coach" onclick="generateCoachInsights()" class="theme-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem; background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-strong); cursor: pointer; border-radius: var(--radius-md);">
+                        <svg style="width: 0.8rem; height: 0.8rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"></path></svg>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div id="ai-coach-content" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-strong); margin-top: 0.5rem;">
+                    <!-- Content will be rendered dynamically -->
+                </div>
+                
+                <div id="ai-coach-loading" class="loading-overlay" style="border-radius: var(--radius-xl);">
+                    <div class="spinner"></div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Analyzing your food logs...</p>
                 </div>
             </div>
         </div>
@@ -763,13 +789,11 @@
 
                 <div class="file-drop-zone">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <p><span class="highlight">Upload or Take Photo</span> of food or label</p>
-                    <input type="file" id="ai-file-input" onchange="handleAiFileChange()" accept="image/*">
+                    <p><span class="highlight">Upload or Take Photos</span> of food or label</p>
+                    <input type="file" id="ai-file-input" onchange="handleAiFileChange()" accept="image/*" multiple>
                 </div>
 
-                <div id="image-preview-container" class="image-preview-box">
-                    <img id="ai-image-preview" src="">
-                </div>
+                <div id="image-preview-container" class="image-preview-box"></div>
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label class="form-label" for="ai-description">Custom Description (Optional)</label>
@@ -1369,6 +1393,9 @@
             updateProgressBar('protein', totals.protein, targets.protein);
             updateProgressBar('carbs', totals.carbs, targets.carbs);
             updateProgressBar('fat', totals.fat, targets.fat);
+
+            // Render AI Coach Insight
+            renderCoachInsight();
         }
 
         function updateProgressBar(id, logged, target) {
@@ -1378,6 +1405,100 @@
             
             bar.style.width = pct + '%';
             pctText.innerText = Math.round((logged / target) * 100) + '%';
+        }
+
+        function renderCoachInsight() {
+            const dayLog = getOrCreateDayLog(currentDateStr);
+            const contentEl = document.getElementById('ai-coach-content');
+            
+            if (dayLog.aiCoachInsight) {
+                contentEl.innerHTML = `<p style="margin: 0; color: var(--text-strong);">${dayLog.aiCoachInsight}</p>`;
+            } else {
+                contentEl.innerHTML = `
+                    <div style="text-align: center; padding: 1rem 0; color: var(--text-muted);">
+                        <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem;">No AI Coach insights generated for this day yet.</p>
+                        <button onclick="generateCoachInsights()" class="theme-btn" style="background: var(--primary); color: #fff; border: none; font-size: 0.8rem; padding: 0.4rem 1rem; font-weight: 600; cursor: pointer; border-radius: var(--radius-md);">
+                            ✨ Ask Coach
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        async function generateCoachInsights() {
+            const key = localStorage.getItem('gemini_api_key');
+            if (!key) {
+                alert("Please add your Gemini API Key in Settings first to generate coach insights.");
+                switchView('settings');
+                return;
+            }
+
+            const dayLog = getOrCreateDayLog(currentDateStr);
+            const targets = macroTrackerStore.targets;
+
+            // Gather the day's data
+            let totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+            let mealDescriptions = [];
+
+            const meals = ['breakfast', 'lunch', 'dinner', 'snacks'];
+            meals.forEach(meal => {
+                const items = dayLog.meals[meal] || [];
+                items.forEach(item => {
+                    totals.calories += item.calories;
+                    totals.protein += item.protein;
+                    totals.carbs += item.carbs;
+                    totals.fat += item.fat;
+                    mealDescriptions.push(`${item.name} (${item.portion || '1 serving'}): ${item.calories} kcal, P: ${item.protein}g, C: ${item.carbs}g, F: ${item.fat}g [logged in ${meal}]`);
+                });
+            });
+
+            const weightInfo = dayLog.weight ? `${dayLog.weight} lbs` : (macroTrackerStore.targets.weight ? `${macroTrackerStore.targets.weight} lbs (target weight)` : 'Not logged');
+
+            const loadingEl = document.getElementById('ai-coach-loading');
+            loadingEl.classList.add('active');
+            haptic('medium');
+
+            const prompt = `You are a premium AI Health and Nutrition Coach. Analyze the user's food logs and macros for today (${currentDateStr}) and provide a concise, engaging, and supportive analysis (one structured paragraph, roughly 4-6 sentences, direct and personalized tone, no markdown headers).
+
+User's Day Summary:
+- Date: ${currentDateStr}
+- Logged Weight: ${weightInfo}
+- Targets: Calories ${targets.calories} kcal, Protein ${targets.protein}g, Carbs ${targets.carbs}g, Fat ${targets.fat}g.
+- Logged Totals: Calories ${totals.calories} kcal (${targets.calories > 0 ? Math.round((totals.calories/targets.calories)*100) : 0}% of target), Protein ${totals.protein}g (${targets.protein > 0 ? Math.round((totals.protein/targets.protein)*100) : 0}% of target), Carbs ${totals.carbs}g (${targets.carbs > 0 ? Math.round((totals.carbs/targets.carbs)*100) : 0}% of target), Fat ${totals.fat}g (${targets.fat > 0 ? Math.round((totals.fat/targets.fat)*100) : 0}% of target).
+- Logged Foods:
+  ${mealDescriptions.length > 0 ? mealDescriptions.join('\n  ') : 'No meals logged yet today.'}
+
+Provide:
+1. A brief review of their macro distribution today and how well they aligned with their targets.
+2. Practical and encouraging insights or tips (e.g., if they are short on protein, suggest source foods; if they exceeded fat, advise on balance; if they did great, congratulate them).
+3. A friendly, coaching-focused sign-off.
+Keep the paragraph flow natural, professional yet warm. Avoid bullet points, and return only the plain text of your coaching paragraph. Do not start with headings, titles, or asterisks.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                const result = await response.json();
+                if (result.error) throw new Error(result.error.message);
+
+                const coachingText = result.candidates[0].content.parts[0].text.trim();
+                dayLog.aiCoachInsight = coachingText;
+                
+                // Save and sync data
+                await saveData();
+                renderCoachInsight();
+                showToast("AI Coach insights updated!");
+            } catch (err) {
+                console.error("Failed to generate AI Coach insights", err);
+                alert("Failed to generate insights: " + err.message);
+            } finally {
+                loadingEl.classList.remove('active');
+            }
         }
 
         // --- DELETE & MANUAL LOG ---
@@ -1841,6 +1962,8 @@
             document.getElementById('action-picker-modal').classList.remove('active');
         }
 
+        let uploadFiles = [];
+
         function openAiUploadModal() {
             closeActionPickerModal();
             const key = localStorage.getItem('gemini_api_key');
@@ -1852,8 +1975,10 @@
             document.getElementById('ai-upload-modal').classList.add('active');
             document.getElementById('ai-error-msg').style.display = 'none';
             document.getElementById('ai-file-input').value = "";
-            document.getElementById('image-preview-container').style.display = 'none';
-            document.getElementById('ai-image-preview').src = "";
+            
+            uploadFiles = [];
+            renderPreviewThumbnails();
+            
             document.getElementById('ai-description').value = "";
 
             // Meal slot default according to hour
@@ -1869,30 +1994,57 @@
             document.getElementById('ai-upload-modal').classList.remove('active');
         }
 
-        let uploadBase64Image = null;
-        let uploadMimeType = null;
-
         function handleAiFileChange() {
-            const file = document.getElementById('ai-file-input').files[0];
-            if (!file) return;
+            const files = document.getElementById('ai-file-input').files;
+            if (!files || files.length === 0) return;
 
-            uploadMimeType = file.type;
+            // Process all selected files
+            Array.from(files).forEach(file => {
+                const mimeType = file.type;
+                const name = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    const base64 = dataUrl.split(',')[1];
+                    uploadFiles.push({ base64, mimeType, name, dataUrl });
+                    renderPreviewThumbnails();
+                };
+                reader.readAsDataURL(file);
+            });
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                uploadBase64Image = e.target.result.split(',')[1];
-                document.getElementById('ai-image-preview').src = e.target.result;
-                document.getElementById('image-preview-container').style.display = 'flex';
-            };
-            reader.readAsDataURL(file);
+            // Clear input so selecting the same files again triggers change event
+            document.getElementById('ai-file-input').value = "";
+        }
+
+        function renderPreviewThumbnails() {
+            const container = document.getElementById('image-preview-container');
+            if (uploadFiles.length === 0) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            container.style.display = 'flex';
+            container.innerHTML = uploadFiles.map((file, idx) => `
+                <div class="preview-thumbnail">
+                    <img src="${file.dataUrl}" alt="${file.name}">
+                    <button class="remove-btn" onclick="removePreviewImage(${idx})" title="Remove">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function removePreviewImage(idx) {
+            haptic('light');
+            uploadFiles.splice(idx, 1);
+            renderPreviewThumbnails();
         }
 
         async function runAiAnalysis() {
             const key = localStorage.getItem('gemini_api_key');
             if (!key) return;
 
-            if (!uploadBase64Image) {
-                alert("Please select or snap a photo of your food first!");
+            if (uploadFiles.length === 0) {
+                alert("Please select or snap at least one photo of your food first!");
                 return;
             }
 
@@ -1905,9 +2057,9 @@
 
             const customDescription = document.getElementById('ai-description').value.trim();
 
-            const prompt = `You are a nutrition and macro-tracking assistant. Analyze the food in the uploaded photo (which may be a meal or a nutrition label) and incorporate the user's description if provided: "${customDescription}".
+            const prompt = `You are a nutrition and macro-tracking assistant. Analyze the food in the uploaded photo(s) (which may be one or more meals, ingredients, or nutrition labels) and incorporate the user's description if provided: "${customDescription}".
 
-Identify each food item, estimate the portion size, and output the nutritional value including Calories (kcal), Protein (g), Carbohydrates (g), and Fats (g).
+Identify each food item across all photos, estimate the portion size, and output the nutritional value including Calories (kcal), Protein (g), Carbohydrates (g), and Fats (g).
 Estimate accurately based on typical portion visual guides if exact metrics are missing.
 
 CRITICAL: Return ONLY a raw JSON array. Do not wrap in markdown \`\`\`json blocks.
@@ -1918,10 +2070,11 @@ Format exactly as follows:
 ]`;
 
             try {
-                const parts = [
-                    { inlineData: { data: uploadBase64Image, mimeType: uploadMimeType } },
-                    { text: prompt }
-                ];
+                const parts = [];
+                uploadFiles.forEach(file => {
+                    parts.push({ inlineData: { data: file.base64, mimeType: file.mimeType } });
+                });
+                parts.push({ text: prompt });
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
                     method: 'POST',
