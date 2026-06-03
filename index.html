@@ -443,6 +443,31 @@
 
         <!-- VIEW: DASHBOARD -->
         <div id="view-dashboard">
+            <!-- AI COACH CARD -->
+            <div class="section-card" id="ai-coach-section" style="margin-bottom: 1.25rem; padding: 1.25rem; position: relative; overflow: hidden;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg style="width: 1.35rem; height: 1.35rem; color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <h3 class="section-title" style="margin: 0; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI Coach Insights</h3>
+                    </div>
+                    <button id="btn-refresh-coach" onclick="generateCoachInsights()" class="theme-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem; background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-strong); cursor: pointer; border-radius: var(--radius-md);">
+                        <svg style="width: 0.8rem; height: 0.8rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"></path></svg>
+                        Refresh
+                    </button>
+                </div>
+                
+                <div id="ai-coach-content" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-strong); margin-top: 0.5rem;">
+                    <!-- Content will be rendered dynamically -->
+                </div>
+                
+                <div id="ai-coach-loading" class="loading-overlay" style="border-radius: var(--radius-xl);">
+                    <div class="spinner"></div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Analyzing your food logs...</p>
+                </div>
+            </div>
+
             <!-- TARGETS SUMMARY GRID -->
             <div class="summary-grid">
                 <!-- Circular Calorie Rings -->
@@ -564,31 +589,6 @@
                             <div class="tot-block"><span class="tot-lbl">F:</span><span class="tot-val fat" id="tot-fat-snacks">0g</span></div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- AI COACH CARD -->
-            <div class="section-card" id="ai-coach-section" style="margin-top: 1.25rem; padding: 1.25rem; position: relative; overflow: hidden;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <svg style="width: 1.35rem; height: 1.35rem; color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                        <h3 class="section-title" style="margin: 0; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI Coach Insights</h3>
-                    </div>
-                    <button id="btn-refresh-coach" onclick="generateCoachInsights()" class="theme-btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem; background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-strong); cursor: pointer; border-radius: var(--radius-md);">
-                        <svg style="width: 0.8rem; height: 0.8rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"></path></svg>
-                        Refresh
-                    </button>
-                </div>
-                
-                <div id="ai-coach-content" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-strong); margin-top: 0.5rem;">
-                    <!-- Content will be rendered dynamically -->
-                </div>
-                
-                <div id="ai-coach-loading" class="loading-overlay" style="border-radius: var(--radius-xl);">
-                    <div class="spinner"></div>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Analyzing your food logs...</p>
                 </div>
             </div>
         </div>
@@ -957,8 +957,13 @@
         let db = null;
         let auth = null;
         let activeUid = null;
-        
-        let currentDateStr = new Date().toISOString().split('T')[0];
+        function formatLocalDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        let currentDateStr = formatLocalDate(new Date());
         let currentActiveView = 'dashboard';
         let collapsedSections = {
             breakfast: false,
@@ -1198,12 +1203,12 @@
                     }));
 
                     updateSyncDot('synced');
-                    goToToday();
+                    renderDashboard();
                 } else {
                     // Create remote save document
                     loadLocalData();
                     saveData(); 
-                    goToToday();
+                    renderDashboard();
                 }
             }, (err) => {
                 console.error("Firestore sync listener error", err);
@@ -1265,13 +1270,13 @@
             haptic('light');
             let date = new Date(currentDateStr + "T00:00:00");
             date.setDate(date.getDate() + days);
-            currentDateStr = date.toISOString().split('T')[0];
+            currentDateStr = formatLocalDate(date);
             document.getElementById('current-date-input').value = currentDateStr;
             renderDashboard();
         }
 
         function goToToday() {
-            currentDateStr = new Date().toISOString().split('T')[0];
+            currentDateStr = formatLocalDate(new Date());
             document.getElementById('current-date-input').value = currentDateStr;
             renderDashboard();
         }
@@ -1295,7 +1300,7 @@
             document.getElementById('current-date-input').value = currentDateStr;
 
             const dayLog = getOrCreateDayLog(currentDateStr);
-            const targets = macroTrackerStore.targets;
+            const targets = macroTrackerStore.targets || {};
 
             // Summary weight
             const weightVal = dayLog.weight || '--';
@@ -1314,10 +1319,10 @@
                     rowsHtml = `<div class="meal-empty">No items logged yet</div>`;
                 } else {
                     items.forEach((item, idx) => {
-                        mealCal += item.calories;
-                        mealProt += item.protein;
-                        mealCarb += item.carbs;
-                        mealFat += item.fat;
+                        mealCal += Number(item.calories) || 0;
+                        mealProt += Number(item.protein) || 0;
+                        mealCarb += Number(item.carbs) || 0;
+                        mealFat += Number(item.fat) || 0;
 
                         rowsHtml += `
                             <div class="row-scroll-wrapper">
@@ -1363,36 +1368,46 @@
             });
 
             // Update Target Summaries
-            document.getElementById('card-calories-target').innerText = targets.calories;
-            document.getElementById('card-protein-target').innerText = targets.protein;
-            document.getElementById('card-carbs-target').innerText = targets.carbs;
-            document.getElementById('card-fat-target').innerText = targets.fat;
+            const targetCal = Number(targets.calories) || 2000;
+            const targetProt = Number(targets.protein) || 150;
+            const targetCarb = Number(targets.carbs) || 200;
+            const targetFat = Number(targets.fat) || 65;
 
-            document.getElementById('card-calories-logged').innerText = totals.calories;
-            document.getElementById('card-protein-logged').innerText = totals.protein;
-            document.getElementById('card-carbs-logged').innerText = totals.carbs;
-            document.getElementById('card-fat-logged').innerText = totals.fat;
+            document.getElementById('card-calories-target').innerText = targetCal;
+            document.getElementById('card-protein-target').innerText = targetProt;
+            document.getElementById('card-carbs-target').innerText = targetCarb;
+            document.getElementById('card-fat-target').innerText = targetFat;
+
+            const loggedCal = Number(totals.calories) || 0;
+            const loggedProt = Number(totals.protein) || 0;
+            const loggedCarb = Number(totals.carbs) || 0;
+            const loggedFat = Number(totals.fat) || 0;
+
+            document.getElementById('card-calories-logged').innerText = loggedCal;
+            document.getElementById('card-protein-logged').innerText = loggedProt;
+            document.getElementById('card-carbs-logged').innerText = loggedCarb;
+            document.getElementById('card-fat-logged').innerText = loggedFat;
 
             // Circular progress ring calculation
-            const caloriesRemaining = Math.max(targets.calories - totals.calories, 0);
+            const caloriesRemaining = Math.max(targetCal - loggedCal, 0);
             document.getElementById('card-calories-remaining').innerText = caloriesRemaining;
 
             const ringEl = document.getElementById('calorie-ring');
-            const percent = Math.min((totals.calories / targets.calories) * 100, 100);
+            const percent = targetCal > 0 ? Math.min((loggedCal / targetCal) * 100, 100) : 0;
             // Circle circumference = 2 * PI * r = 2 * 3.14159 * 36 = 226.19
             const strokeOffset = 226 - (226 * percent) / 100;
-            ringEl.style.strokeDashoffset = strokeOffset;
+            ringEl.style.strokeDashoffset = isNaN(strokeOffset) ? 226 : strokeOffset;
             
-            if (totals.calories > targets.calories) {
+            if (loggedCal > targetCal) {
                 ringEl.style.stroke = 'var(--danger)';
             } else {
                 ringEl.style.stroke = 'var(--primary)';
             }
 
             // Progress bars percentages
-            updateProgressBar('protein', totals.protein, targets.protein);
-            updateProgressBar('carbs', totals.carbs, targets.carbs);
-            updateProgressBar('fat', totals.fat, targets.fat);
+            updateProgressBar('protein', loggedProt, targetProt);
+            updateProgressBar('carbs', loggedCarb, targetCarb);
+            updateProgressBar('fat', loggedFat, targetFat);
 
             // Render AI Coach Insight
             renderCoachInsight();
@@ -1401,10 +1416,15 @@
         function updateProgressBar(id, logged, target) {
             const bar = document.getElementById(`${id}-progress`);
             const pctText = document.getElementById(`${id}-pct`);
-            const pct = Math.min(Math.round((logged / target) * 100), 100);
+            
+            const numLogged = Number(logged) || 0;
+            const numTarget = Number(target) || 100;
+            
+            const pct = numTarget > 0 ? Math.min(Math.round((numLogged / numTarget) * 100), 100) : 0;
+            const displayPct = numTarget > 0 ? Math.round((numLogged / numTarget) * 100) : 0;
             
             bar.style.width = pct + '%';
-            pctText.innerText = Math.round((logged / target) * 100) + '%';
+            pctText.innerText = displayPct + '%';
         }
 
         function renderCoachInsight() {
@@ -1745,7 +1765,7 @@ Keep the paragraph flow natural, professional yet warm. Avoid bullet points, and
             for (let i = 6; i >= 0; i--) {
                 let d = new Date();
                 d.setDate(d.getDate() - i);
-                const dStr = d.toISOString().split('T')[0];
+                const dStr = formatLocalDate(d);
                 const parts = dStr.split('-');
                 labels.push(`${parseInt(parts[1])}/${parseInt(parts[2])}`);
 
