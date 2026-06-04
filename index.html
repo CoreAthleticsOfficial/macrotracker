@@ -589,6 +589,7 @@
                             <div class="tot-block"><span class="tot-lbl">F:</span><span class="tot-val fat" id="tot-fat-snacks">0g</span></div>
                         </div>
                     </div>
+                    <div id="meal-list-snacks" class="meal-list"></div>
                 </div>
             </div>
         </div>
@@ -1353,13 +1354,20 @@
                 }
 
                 // Render Section list
-                document.getElementById(`meal-list-${meal}`).innerHTML = rowsHtml;
+                const listEl = document.getElementById(`meal-list-${meal}`);
+                if (listEl) {
+                    listEl.innerHTML = rowsHtml;
+                }
 
                 // Update Meal Headers
-                document.getElementById(`tot-cal-${meal}`).innerText = mealCal;
-                document.getElementById(`tot-prot-${meal}`).innerText = mealProt + 'g';
-                document.getElementById(`tot-carb-${meal}`).innerText = mealCarb + 'g';
-                document.getElementById(`tot-fat-${meal}`).innerText = mealFat + 'g';
+                const totCalEl = document.getElementById(`tot-cal-${meal}`);
+                if (totCalEl) totCalEl.innerText = mealCal;
+                const totProtEl = document.getElementById(`tot-prot-${meal}`);
+                if (totProtEl) totProtEl.innerText = mealProt + 'g';
+                const totCarbEl = document.getElementById(`tot-carb-${meal}`);
+                if (totCarbEl) totCarbEl.innerText = mealCarb + 'g';
+                const totFatEl = document.getElementById(`tot-fat-${meal}`);
+                if (totFatEl) totFatEl.innerText = mealFat + 'g';
 
                 totals.calories += mealCal;
                 totals.protein += mealProt;
